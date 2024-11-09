@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.Subsystems;
 import static org.firstinspires.ftc.robotcore.external.BlocksOpModeCompanion.hardwareMap;
 
 import com.arcrobotics.ftclib.command.Command;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
@@ -37,7 +38,7 @@ public class ArmSubsystem extends SubsystemBase {
         super.periodic();
     }
 
-    public Command set_Setpoint(IntSupplier Setpoint){
+    public void Setpos(IntSupplier Setpoint){
         PID.setSetPoint(Setpoint.getAsInt());
     }
 }

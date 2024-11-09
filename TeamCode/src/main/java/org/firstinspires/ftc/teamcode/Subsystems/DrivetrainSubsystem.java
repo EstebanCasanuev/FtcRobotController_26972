@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.hardware.motors.Motor;
+import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.arcrobotics.ftclib.kinematics.Odometry;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -27,7 +28,7 @@ public class DrivetrainSubsystem extends SubsystemBase {
     public static final double TICKS_PER_REV = 2000;
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
-    private Motor.Encoder leftOdometer, rightOdometer, centerOdometer;
+    private MotorEx leftOdometer, rightOdometer, centerOdometer;
 
     HolonomicOdometry m_robotOdometry = new HolonomicOdometry(
             ()->leftOdometer.getDistance(),
@@ -43,8 +44,9 @@ public class DrivetrainSubsystem extends SubsystemBase {
     // pass the odometry object into the subsystem constructor
     public DrivetrainSubsystem(){
 
-        leftOdometer = frontLeftMotor.encoder;
-        rightOdometer = frontRightMotor.encoder;
+        leftOdometer = new MotorEx(hardwareMap, "leftOdometer");
+        rightOdometer =  new MotorEx(hardwareMap, "rightOdometer");
+        centerOdometer =  new MotorEx(hardwareMap, "centerOdometer");
 
 
         m_Drive = new MecanumDrive(frontLeftMotor,frontRightMotor, rearLeftMotor, rearRightMotor);
