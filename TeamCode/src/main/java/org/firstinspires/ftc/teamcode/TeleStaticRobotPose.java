@@ -47,7 +47,7 @@ public class TeleStaticRobotPose extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
-    FtcDashboard.getInstance().startCameraStream(camera, 0);
+    //FtcDashboard.getInstance().startCameraStream(camera, 0);
 
 
 
