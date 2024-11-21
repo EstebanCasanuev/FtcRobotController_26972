@@ -67,6 +67,10 @@ public class TeleStaticRobotPose extends LinearOpMode {
         PidY = new PIDController(0.1, 0, 0);
         PidZ = new PIDController(0.1, 0, 0);
 
+        PidX.setTolerance(4);
+        PidY.setTolerance(4);
+        PidZ.setTolerance(15);
+
 
         frontLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         frontRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
@@ -86,7 +90,6 @@ public class TeleStaticRobotPose extends LinearOpMode {
                 CENTER_WHEEL_OFFSET
         );
 
-        // read the current position from the position tracker
         odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
 
 
@@ -100,16 +103,25 @@ public class TeleStaticRobotPose extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive()) {
-            // teleop things
 
-            // update position
             odometry.updatePose();
-            dashboardTelemetry.addData("X:", odometry.getPose().getX());
+
+            //Telemetry
+            dashboardTelemetry.addData("X:" , odometry.getPose().getX());
             dashboardTelemetry.addData("Y:", odometry.getPose().getY());
             dashboardTelemetry.addData("Angulo:", odometry.getPose().getRotation().getDegrees());
             dashboardTelemetry.addData("X Setpoint:", PidX.getSetPoint());
             dashboardTelemetry.addData("Y Setpoint:", PidY.getSetPoint());
             dashboardTelemetry.addData("Z Setpoint:", PidZ.getSetPoint());
+
+            dashboardTelemetry.addData("X Drivetrain Velocity:",
+                    PidX.calculate(odometry.getPose().getX()));
+
+            dashboardTelemetry.addData("Y Drivetrain Velocity:",
+                    PidY.calculate(odometry.getPose().getY()));
+
+            dashboardTelemetry.addData("Z Drivetrain Velocity:",
+                    odometry.getPose().getRotation().getDegrees());
 
             dashboardTelemetry.update();
 
@@ -120,8 +132,8 @@ public class TeleStaticRobotPose extends LinearOpMode {
             }
 
             /*m_Drive.driveRobotCentric(
+                    -PidX.calculate(odometry.getPose().getY()),
                     PidY.calculate(odometry.getPose().getX()),
-                    PidX.calculate(odometry.getPose().getY()),
                     -PidZ.calculate(odometry.getPose().getRotation().getDegrees())
             );*/
 
@@ -151,14 +163,11 @@ public class TeleStaticRobotPose extends LinearOpMode {
                         0
                 );
             }
-
         }
     }
-
     public void setBot_Setpoint(double X, double Y, double Z){
-        PidX.setSetPoint(Y);
-        PidY.setSetPoint(X);
+        PidX.setSetPoint(X);
+        PidY.setSetPoint(Y);
         PidZ.setSetPoint(Z);
     }
-
 }
