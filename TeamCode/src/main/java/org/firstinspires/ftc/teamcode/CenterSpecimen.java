@@ -22,11 +22,11 @@ public class CenterSpecimen extends LinearOpMode {
     PIDController PidY;
     PIDController PidZ;
 
-    public static double PidX_P = 0.1;
+    public static double PidX_P = 0.20;
     public static double PidX_I = 0;
     public static double PidX_D = 0;
 
-    public static double PidY_P = 0.1;
+    public static double PidY_P = 0.25;
     public static double PidY_I = 0;
     public static double PidY_D = 0;
 
@@ -59,7 +59,7 @@ public class CenterSpecimen extends LinearOpMode {
     double yPos;
     double zAngle;
 
-    int autonomous = 0;
+    int autonomous = -1;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -108,18 +108,19 @@ public class CenterSpecimen extends LinearOpMode {
 
         waitForStart();
 
+
         while (opModeIsActive()) {
 
             odometry.updatePose();
 
             xPos = odometry.getPose().getY();
             yPos = odometry.getPose().getX();
-            zAngle = odometry.getPose().getHeading();
+            zAngle = getAngle(odometry.getPose().getRotation().getDegrees());
 
             //dashTelemetry
-            dashTelemetry.addData("X:" , odometry.getPose().getX());
-            dashTelemetry.addData("Y:", odometry.getPose().getY());
-            dashTelemetry.addData("Angulo:", odometry.getPose().getRotation().getDegrees());
+            dashTelemetry.addData("X:" , xPos);
+            dashTelemetry.addData("Y:", yPos);
+            dashTelemetry.addData("Angulo:", zAngle);
             dashTelemetry.addData("X Setpoint:", PidX.getSetPoint());
             dashTelemetry.addData("Y Setpoint:", PidY.getSetPoint());
             dashTelemetry.addData("Z Setpoint:", PidZ.getSetPoint());
@@ -148,94 +149,51 @@ public class CenterSpecimen extends LinearOpMode {
             dashTelemetry.update();
 
 
-
             switch(autonomous){
                 case 0:
                     setBot_Setpoint(0, 22.5, 0);
                     break;
                 case 1:
-                    setBot_Setpoint(-29, 19, 0);
+                    setBot_Setpoint(29, 19, 0);
                     break;
                 case 2:
-                    setBot_Setpoint(-36, 31, 0);
+                    setBot_Setpoint(36, 31, 0);
                     break;
                 case 3:
-                    setBot_Setpoint(-37, 50, 0);
+                    setBot_Setpoint(37, 50, 0);
                     break;
                 case 4:
-                    setBot_Setpoint(-46, 46, 0);
+                    setBot_Setpoint(46, 46, 0);
                     break;
                 case 5:
-                    setBot_Setpoint(-46, 8, 0);
+                    setBot_Setpoint(46, 8, 0);
                     break;
                 case 6:
-                    setBot_Setpoint(-46, 46.1, 0);
+                    setBot_Setpoint(46, 46.1, 0);
                     break;
                 case 7:
-                    setBot_Setpoint(-54, 46, 0);
+                    setBot_Setpoint(54, 46, 0);
                     break;
                 case 8:
-                    setBot_Setpoint(-54, 8, 0);
+                    setBot_Setpoint(54, 8, 0);
                     break;
                 case 9:
-                    setBot_Setpoint(-54, 46.1, 0);
+                    setBot_Setpoint(54, 46.1, 0);
                     break;
                 case 10:
-                    setBot_Setpoint(-61, 46, 0);
+                    setBot_Setpoint(30, 19, 0);
                     break;
                 case 11:
-                    setBot_Setpoint(-61, 8, 0);
+                    setBot_Setpoint(30, 19, 90);
                     break;
                 case 12:
-                    setBot_Setpoint(-41, 18, 0);
-                    break;
+                    setBot_Setpoint(18, 2, 90);
                 case 13:
-                    setBot_Setpoint(-35, 2, 0);
-                    break;
-                case 14:
-                    setBot_Setpoint(-35,  2, -90);
-                    break;
-                case 15:
-                    setBot_Setpoint(-22,  2, -90);
-                    break;
-                case 16:
-                    setBot_Setpoint(-22, 2, 0);
-                    break;
-                case 17:
-                    setBot_Setpoint(0, 23.5, 0);
-                    break;
-                case 18:
-                    setBot_Setpoint(-35, 2.1, 0);
-                    break;
-                case 19:
-                    setBot_Setpoint(-35,  2.1, -90);
-                    break;
-                case 20:
-                    setBot_Setpoint(-22,  2, -90);
-                    break;
-                case 21:
-                    setBot_Setpoint(-22, 2, 0);
-                    break;
-                case 22:
-                    setBot_Setpoint(0, 23.5, 0);
-                    break;
-
+                    setBot_Setpoint(18, 2, 90);
                 default:
                     m_Drive.driveRobotCentric(0, 0, 0);
                     break;
-
-
             }
-
-            /*switch (autonomous){
-                case 1:
-                    arm.setPower(P_Controller(0.15, arm.getCurrentPosition(), 750));
-                    handServo.setPosition(1);
-
-                default:
-                    arm.setPower(P_Controller(0.15, arm.getCurrentPosition(), 0));
-
-            }*/
 
             if(PidZ.getSetPoint() == -90){
                 m_Drive.driveRobotCentric(
@@ -254,9 +212,9 @@ public class CenterSpecimen extends LinearOpMode {
             }else{
 
             m_Drive.driveRobotCentric(
-                    -PidX.calculate(xPos)*0.5,
-                    -PidY.calculate(yPos)*0.5,
-                    -PidZ.calculate(zAngle)*0.35
+                    -PidX.calculate(xPos),
+                    -PidY.calculate(yPos),
+                    -PidZ.calculate(zAngle)
             );
             }
         }
@@ -269,12 +227,11 @@ public class CenterSpecimen extends LinearOpMode {
 
         if(atSetpoint(X, Y, Z)){
 
-            sleep(1000);
             autonomous += 1;
         }
     }
 
-    public void setBot_Setpoint(double X, double Y, double Z, boolean ready){
+    /*public void setBot_Setpoint(double X, double Y, double Z, boolean ready){
         PidX.setSetPoint(X);
         PidY.setSetPoint(Y);
         PidZ.setSetPoint(Z);
@@ -282,15 +239,21 @@ public class CenterSpecimen extends LinearOpMode {
         if(atSetpoint(X, Y, Z) && ready){
             autonomous += 1;
         }
-    }
+    }*/
 
     public boolean atSetpoint(double X_Setpoint, double Y_Setpoint, double Z_Setpoint){
-        return xPos > X_Setpoint - 0.5
-                && xPos < X_Setpoint + 0.5
-                && yPos > Y_Setpoint - 0.5
-                && yPos < Y_Setpoint + 0.5
-                && zAngle < Z_Setpoint + 1
-                && zAngle > Z_Setpoint - 1;
+        return xPos > X_Setpoint - 2
+                && xPos < X_Setpoint + 2
+                && yPos > Y_Setpoint - 2
+                && yPos < Y_Setpoint + 2
+                && zAngle < Z_Setpoint + 5
+                && zAngle > Z_Setpoint - 5;
 
     }
+
+    public double getAngle(double ActualAngle) {
+        return (ActualAngle+90) - 360 * Math.floor((ActualAngle+90)/360) - 90;
+    }
+
+
 }

@@ -2,21 +2,30 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
+
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
+
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
+import com.qualcomm.robotcore.hardware.IMU;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
 
 @Config
 @TeleOp(name = "OdometryTest")
 public class TeleStaticRobotPose extends LinearOpMode {
+
+    BNO055IMU.Parameters myIMUparameters;
+
 
     private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
     MecanumDrive m_Drive;
@@ -38,14 +47,9 @@ public class TeleStaticRobotPose extends LinearOpMode {
     public static double PidZ_I = 0;
     public static double PidZ_D = 0;
 
-
-    //dashTelemetryPacket packet = new dashTelemetryPacket();
-
-
-    //dashboard.senddashTelemetryPacket(packet);
-    //int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-    //OpenCvWebcam camera = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"), cameraMonitorViewId);
-
+    public static double X_Setpoint = 0;
+    public static double Y_Setpoint = 0;
+    public static double Z_Setpoint = 0;
 
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashTelemetry = dashboard.getTelemetry();
@@ -61,6 +65,8 @@ public class TeleStaticRobotPose extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+
+
 
         int autonomous = 0;
 
@@ -111,7 +117,6 @@ public class TeleStaticRobotPose extends LinearOpMode {
 
             odometry.updatePose();
 
-            //dashTelemetry
             dashTelemetry.addData("X:" , odometry.getPose().getX());
             dashTelemetry.addData("Y:", odometry.getPose().getY());
             dashTelemetry.addData("Angulo:", odometry.getPose().getRotation().getDegrees());
@@ -143,77 +148,39 @@ public class TeleStaticRobotPose extends LinearOpMode {
             dashTelemetry.update();
 
 
-            m_Drive.driveRobotCentric(
-                    -PidX.calculate(odometry.getPose().getY())*0.5,
-                    -PidY.calculate(odometry.getPose().getX())*0.5,
-                    -PidZ.calculate(odometry.getPose().getHeading())*0.35
-            );
+            setBot_Setpoint(X_Setpoint, Y_Setpoint, Z_Setpoint);
 
-            /*switch(autonomous){
-                case 0:
-                    setBot_Setpoint(-24, -24, 0);
-                    if(odometry.getPose().getY() > -25 && odometry.getPose().getY() < -23 && odometry.getPose().getX() > -25 && odometry.getPose().getX() < -23){autonomous = 1;}
-                    break;
-                case 1:
-                    setBot_Setpoint(-24, 24, 0);
-                    if(odometry.getPose().getY() > -26 && odometry.getPose().getY() < -22 && odometry.getPose().getX() > 22 && odometry.getPose().getX() < 26){autonomous = 2;}
-                    break;
-                case 2:
-                    setBot_Setpoint(24, 24, 0);
-                    if(odometry.getPose().getY() > 22 && odometry.getPose().getY() < 26 && odometry.getPose().getX() > 22 && odometry.getPose().getX() < 26){autonomous = 3;}
-                    break;
-
-                case 3:
-                    setBot_Setpoint(-24, 24, 0);
-                    if(odometry.getPose().getY() > -26 && odometry.getPose().getY() < -22 && odometry.getPose().getX() > 22 && odometry.getPose().getX() < 26){autonomous = 4;}
-                    break;
-
-                case 4:
-                    setBot_Setpoint(0, 0, 180);
-                    if(odometry.getPose().getRotation().getDegrees() > 178 && odometry.getPose().getRotation().getDegrees() < 182){autonomous = 5;}
-                    break;
-
-                case 5:
-                    setBot_Setpoint(-24, -24, 0);
-                    if(odometry.getPose().getY() > -25 && odometry.getPose().getY() < -23 && odometry.getPose().getX() > -25 && odometry.getPose().getX() < -23){autonomous = 6;}
-                    break;
-
-
-            }*/
-
-            setBot_Setpoint(0, 0, -130);
-
-            /*m_Drive.driveRobotCentric(
-                    -gamepad1.left_stick_x,
-                    gamepad1.left_stick_y,
-                    -gamepad1.right_stick_x
-            );*/
-
-            /*if(odometry.getPose().getX() < 25){
+            if(PidZ.getSetPoint() == -90 || PidZ.getSetPoint() == 90){
                 m_Drive.driveRobotCentric(
-                        0,
-                        -0.6,
-                        0
+                        -PidY.calculate(odometry.getPose().getX())*0.5,
+                        PidX.calculate(odometry.getPose().getY())*0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
 
-            }else if(odometry.getPose().getX() > 25){
+            } else if (PidZ.getSetPoint() > 120 && PidZ.getSetPoint() < -240) {
                 m_Drive.driveRobotCentric(
-                        0,
-                        0.6,
-                        0
+                        -PidX.calculate(odometry.getPose().getY())*0.5,
+                        PidY.calculate(odometry.getPose().getX())*0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
-            }else{
+
+            }else {
+
                 m_Drive.driveRobotCentric(
-                        0,
-                        0,
-                        0
+                        -PidX.calculate(odometry.getPose().getY()) * 0.5,
+                        -PidY.calculate(odometry.getPose().getX()) * 0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
                 );
-            }*/
+            }
         }
     }
     public void setBot_Setpoint(double X, double Y, double Z){
         PidX.setSetPoint(X);
         PidY.setSetPoint(Y);
         PidZ.setSetPoint(Z);
+    }
+
+    public double getAngle(double ActualAngle) {
+        return (ActualAngle+90) - 360 * Math.floor((ActualAngle+90)/360) - 90;
     }
 }
