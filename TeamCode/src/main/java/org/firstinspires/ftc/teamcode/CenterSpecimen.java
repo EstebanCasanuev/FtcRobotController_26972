@@ -34,6 +34,18 @@ public class CenterSpecimen extends LinearOpMode {
     public static double PidZ_I = 0;
     public static double PidZ_D = 0;
 
+    public static double P_SLIDEMOTION= 0.00;
+    public static double I_SLIDEMOTION= 0.00;
+    public static double D_SLIDEMOTION= 0.00;
+
+    public static double P_SWINGMOTION= 0.00;
+    public static double I_SWINGMOTION= 0.00;
+    public static double D_SWINGMOTION= 0.00;
+
+    private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
+    private MotorEx rightSlider, leftSlider;
+    private MotorEx SlideMotion;
+
 
     //dashTelemetryPacket packet = new dashTelemetryPacket();
 
@@ -85,6 +97,13 @@ public class CenterSpecimen extends LinearOpMode {
         frontRightMotor.resetEncoder();
         frontLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
+
+        rightSlider = new MotorEx(hardwareMap, "rightSlider");
+        leftSlider = new MotorEx(hardwareMap, "leftSlider");
+
+        SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
+
+        leftSlider.setInverted(true);
 
 
 
@@ -151,71 +170,97 @@ public class CenterSpecimen extends LinearOpMode {
 
             switch(autonomous){
                 case 0:
-                    setBot_Setpoint(0, 22.5, 0);
+                    setBot_Setpoint(-23, 22.5, 0);
                     break;
                 case 1:
-                    setBot_Setpoint(29, 19, 0);
+                    setBot_Setpoint(6, 19, 0);
                     break;
                 case 2:
-                    setBot_Setpoint(36, 31, 0);
+                    setBot_Setpoint(13, 31, 0);
                     break;
                 case 3:
-                    setBot_Setpoint(37, 50, 0);
+                    setBot_Setpoint(14, 50, 0);
                     break;
                 case 4:
-                    setBot_Setpoint(46, 46, 0);
+                    setBot_Setpoint(23, 46, 0);
                     break;
                 case 5:
-                    setBot_Setpoint(46, 8, 0);
+                    setBot_Setpoint(23, 8, 0);
                     break;
                 case 6:
-                    setBot_Setpoint(46, 46.1, 0);
+                    setBot_Setpoint(23, 46.1, 0);
                     break;
                 case 7:
-                    setBot_Setpoint(54, 46, 0);
+                    setBot_Setpoint(31, 46, 0);
                     break;
                 case 8:
-                    setBot_Setpoint(54, 8, 0);
+                    setBot_Setpoint(31, 8, 0);
                     break;
                 case 9:
-                    setBot_Setpoint(54, 46.1, 0);
+                    setBot_Setpoint(31, 46.1, 0);
                     break;
                 case 10:
-                    setBot_Setpoint(30, 19, 0);
+                    setBot_Setpoint(7, 19, 0);
                     break;
                 case 11:
-                    setBot_Setpoint(30, 19, 90);
+                    setBot_Setpoint(7, 19, 90);
                     break;
                 case 12:
-                    setBot_Setpoint(18, 2, 90);
+                    setBot_Setpoint(-5, 2, 90);
+                    break;
                 case 13:
-                    setBot_Setpoint(18, 2, 90);
+                    setBot_Setpoint(-7, 4, 90);
+                    break;
+                case 14:
+                    setBot_Setpoint(-9, 10, 0);
+                    break;
+                case 15:
+                    setBot_Setpoint(-29, 24, 0);
+                    break;
+                case 16:
+                    setBot_Setpoint(7, 19.1, 0);
+                    break;
+                case 17:
+                    setBot_Setpoint(7, 19.1, 90);
+                    break;
+                case 18:
+                    setBot_Setpoint(-5, 2.1, 90);
+                    break;
+                case 19:
+                    setBot_Setpoint(-7, 4, 90);
+                    break;
+                case 20:
+                    setBot_Setpoint(-9, 10, 0);
+                    break;
+                case 21:
+                    setBot_Setpoint(-34, 24, 0);
+                    break;
                 default:
                     m_Drive.driveRobotCentric(0, 0, 0);
                     break;
             }
 
-            if(PidZ.getSetPoint() == -90){
+            if (PidZ.getSetPoint() > 120 && PidZ.getSetPoint() < -240) {
                 m_Drive.driveRobotCentric(
-                        -PidY.calculate(yPos)*0.5,
-                        PidX.calculate(xPos)*0.5,
-                        -PidZ.calculate(zAngle)*0.35
+                        -PidX.calculate(odometry.getPose().getY())*0.5,
+                        PidY.calculate(odometry.getPose().getX())*0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
 
-            } else if (PidZ.getSetPoint() == 180 || PidZ.getSetPoint() == -180) {
+            }else if(PidZ.getSetPoint() == 90){
                 m_Drive.driveRobotCentric(
-                        -PidX.calculate(xPos)*0.5,
-                        PidY.calculate(yPos)*0.5,
-                        -PidZ.calculate(zAngle)*0.35
+                        PidY.calculate(odometry.getPose().getX())*0.5,
+                        -PidX.calculate(odometry.getPose().getY())*0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
 
             }else{
 
-            m_Drive.driveRobotCentric(
-                    -PidX.calculate(xPos),
-                    -PidY.calculate(yPos),
-                    -PidZ.calculate(zAngle)
-            );
+                m_Drive.driveRobotCentric(
+                        -PidX.calculate(odometry.getPose().getY()) * 0.5,
+                        -PidY.calculate(odometry.getPose().getX()) * 0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
+                );
             }
         }
     }

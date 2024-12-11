@@ -150,7 +150,7 @@ public class TeleStaticRobotPose extends LinearOpMode {
 
             setBot_Setpoint(X_Setpoint, Y_Setpoint, Z_Setpoint);
 
-            if(PidZ.getSetPoint() == -90 || PidZ.getSetPoint() == 90){
+            if(PidZ.getSetPoint() == -90){
                 m_Drive.driveRobotCentric(
                         -PidY.calculate(odometry.getPose().getX())*0.5,
                         PidX.calculate(odometry.getPose().getY())*0.5,
@@ -164,7 +164,17 @@ public class TeleStaticRobotPose extends LinearOpMode {
                         -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
 
-            }else {
+            }else if(PidZ.getSetPoint() == 90){
+                m_Drive.driveRobotCentric(
+                        PidY.calculate(odometry.getPose().getX())*0.5,
+                        -PidX.calculate(odometry.getPose().getY())*0.5,
+                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
+                );
+
+            }
+
+
+            else {
 
                 m_Drive.driveRobotCentric(
                         -PidX.calculate(odometry.getPose().getY()) * 0.5,
