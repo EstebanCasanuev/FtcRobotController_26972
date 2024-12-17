@@ -42,9 +42,8 @@ public class CenterSpecimen extends LinearOpMode {
     public static double I_SWINGMOTION= 0.00;
     public static double D_SWINGMOTION= 0.00;
 
-    private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
-    private MotorEx rightSlider, leftSlider;
-    private MotorEx SlideMotion;
+    /*private MotorEx rightSlider, leftSlider;
+    private MotorEx SlideMotion;*/
 
 
     //dashTelemetryPacket packet = new dashTelemetryPacket();
@@ -60,8 +59,8 @@ public class CenterSpecimen extends LinearOpMode {
 
 
 
-    public static final double TRACKWIDTH = 18;
-    public static final double CENTER_WHEEL_OFFSET = 4;
+    public static final double TRACKWIDTH = 14.5;
+    public static final double CENTER_WHEEL_OFFSET = 7.875;
     public static final double WHEEL_DIAMETER = 1.25;
     // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 2000;
@@ -98,12 +97,12 @@ public class CenterSpecimen extends LinearOpMode {
         frontLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
 
-        rightSlider = new MotorEx(hardwareMap, "rightSlider");
+        /*rightSlider = new MotorEx(hardwareMap, "rightSlider");
         leftSlider = new MotorEx(hardwareMap, "leftSlider");
 
         SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
 
-        leftSlider.setInverted(true);
+        leftSlider.setInverted(true);*/
 
 
 

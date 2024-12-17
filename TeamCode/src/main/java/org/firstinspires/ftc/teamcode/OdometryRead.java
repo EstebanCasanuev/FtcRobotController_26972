@@ -14,8 +14,8 @@ public class OdometryRead extends LinearOpMode {
     private MotorEx leftEncoder, rightEncoder, perpEncoder;
     private HolonomicOdometry odometry;
 
-    public static final double TRACKWIDTH = 18;
-    public static final double CENTER_WHEEL_OFFSET = 4;
+    public static final double TRACKWIDTH = 14.5;
+    public static final double CENTER_WHEEL_OFFSET = 7.875;
     public static final double WHEEL_DIAMETER = 1.25;
     // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 2000;
@@ -23,9 +23,9 @@ public class OdometryRead extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
-        leftEncoder = new MotorEx(hardwareMap, "leftEncoder");
-        rightEncoder = new MotorEx(hardwareMap, "rightEncoder");
-        perpEncoder = new MotorEx(hardwareMap, "perpEncoder");
+        leftEncoder = new MotorEx(hardwareMap, "frontLeftMotor");
+        rightEncoder = new MotorEx(hardwareMap, "frontRightMotor");
+        perpEncoder = new MotorEx(hardwareMap, "rearRightMotor");
 
         leftEncoder.setDistancePerPulse(DISTANCE_PER_PULSE);
         rightEncoder.setDistancePerPulse(DISTANCE_PER_PULSE);

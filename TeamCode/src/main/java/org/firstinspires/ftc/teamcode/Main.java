@@ -58,6 +58,8 @@ public class Main extends LinearOpMode {
                 rightSlider.set(SwingSlidePID.calculate(rightSlider.getCurrentPosition()));
                 leftSlider.set(SwingSlidePID.calculate(rightSlider.getCurrentPosition()));
 
+
+
                 if(gamepad2.a){
                     SlidePID.setSetPoint(200);
                     SwingSlidePID.setSetPoint(0);
