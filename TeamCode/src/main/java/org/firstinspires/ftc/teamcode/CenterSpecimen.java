@@ -42,7 +42,7 @@ public class CenterSpecimen extends LinearOpMode {
     public static double I_SWINGMOTION= 0.00;
     public static double D_SWINGMOTION= 0.00;
 
-    private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
+    //private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
     private MotorEx rightSlider, leftSlider;
     private MotorEx SlideMotion;
 
