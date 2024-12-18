@@ -266,12 +266,12 @@ public class CenterSpecimen extends LinearOpMode {
     }
 
     public void setBot_Setpoint(double X, double Y, double Z){
+
         PidX.setSetPoint(X);
         PidY.setSetPoint(Y);
         PidZ.setSetPoint(Z);
 
         if(atSetpoint(X, Y, Z)){
-
             autonomous += 1;
         }
     }
