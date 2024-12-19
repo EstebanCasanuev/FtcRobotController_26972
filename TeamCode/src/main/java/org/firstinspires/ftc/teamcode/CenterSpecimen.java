@@ -14,14 +14,15 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 @Autonomous(name = "CenterSpecimen")
 public class CenterSpecimen extends LinearOpMode {
 
-    private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
-    MecanumDrive m_Drive;
-    private HolonomicOdometry odometry;
+    private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor; //Declaracion inicial de los motores
+    MecanumDrive m_Drive; //Declaracion de la clase de mecanum drive
+    private HolonomicOdometry odometry; //Declaracion de la clase de Odometria especifica para MecanumDrive
 
-    PIDController PidX;
-    PIDController PidY;
+    PIDController PidX;//Declaracion de Cntroladores PID
+    PIDController PidY;//Individualmente por eje
     PIDController PidZ;
 
+    //Declaracion de Constantes de Proporcion, Integral y derivada
     public static double PidX_P = 0.20;
     public static double PidX_I = 0;
     public static double PidX_D = 0;
@@ -42,9 +43,9 @@ public class CenterSpecimen extends LinearOpMode {
     public static double I_SWINGMOTION= 0.00;
     public static double D_SWINGMOTION= 0.00;
 
-    private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
-    private MotorEx rightSlider, leftSlider;
-    private MotorEx SlideMotion;
+
+    //private MotorEx rightSlider, leftSlider;
+    //private MotorEx SlideMotion;
 
 
     //dashTelemetryPacket packet = new dashTelemetryPacket();
@@ -60,18 +61,18 @@ public class CenterSpecimen extends LinearOpMode {
 
 
 
-    public static final double TRACKWIDTH = 18;
-    public static final double CENTER_WHEEL_OFFSET = 4;
+    public static final double TRACKWIDTH = 14.5;
+    public static final double CENTER_WHEEL_OFFSET = 6.875;
     public static final double WHEEL_DIAMETER = 1.25;
     // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 2000;
-    public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
+    public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV; //Se declaran datos necesarios paa la odometria en double
 
     double xPos;
     double yPos;
-    double zAngle;
+    double zAngle; //Variables de las pociciones en sistema cartesiano
 
-    int autonomous = -1;
+    int autonomous = -1; //variable principal del Switch para el funcionamiento de la secuencia autonoma
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -81,29 +82,31 @@ public class CenterSpecimen extends LinearOpMode {
         frontLeftMotor = new MotorEx(hardwareMap, "frontLeftMotor");
         frontRightMotor = new MotorEx(hardwareMap, "frontRightMotor");
         rearRightMotor = new MotorEx(hardwareMap, "rearRightMotor");
-        rearLeftMotor = new MotorEx(hardwareMap, "rearLeftMotor");
+        rearLeftMotor = new MotorEx(hardwareMap, "rearLeftMotor");//Se terminan de declarar los motores
 
-        m_Drive = new MecanumDrive(frontLeftMotor, frontRightMotor, rearLeftMotor, rearRightMotor);
+        m_Drive = new MecanumDrive(frontLeftMotor, frontRightMotor, rearLeftMotor, rearRightMotor); //Se adjuntan los motores a la clase de Mecanum
 
         PidX = new PIDController(PidX_P, PidX_I, PidX_D);
         PidY = new PIDController(PidY_P, PidY_I, PidY_D);
-        PidZ = new PIDController(PidZ_P, PidZ_I, PidZ_D);
+        PidZ = new PIDController(PidZ_P, PidZ_I, PidZ_D); //Se le adjuntan las constantes a los controladores PID
 
 
         frontLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         frontRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
-        rearRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
+        rearRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE); //Se le setea a los encoders de las llantas de odometria
 
         frontRightMotor.resetEncoder();
         frontLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
 
-        rightSlider = new MotorEx(hardwareMap, "rightSlider");
+        rearRightMotor.setInverted(true); //La llanta estaba fallando talvez no sea necesario
+
+        /*rightSlider = new MotorEx(hardwareMap, "rightSlider");
         leftSlider = new MotorEx(hardwareMap, "leftSlider");
 
         SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
 
-        leftSlider.setInverted(true);
+        leftSlider.setInverted(true);*/
 
 
 
@@ -113,9 +116,9 @@ public class CenterSpecimen extends LinearOpMode {
                 rearRightMotor::getDistance,
                 TRACKWIDTH,
                 CENTER_WHEEL_OFFSET
-        );
+        ); //A la clase de odometria se le adjuntan los valores de los encoders y las posiciones de los pods de odometria
 
-        odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+        odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0))); //Se recibe por primera vez el posicionamiento del robot mediante la odometria pra empezar en ceros
 
 
         dashTelemetry.addData("Robot Position at Init: ", odometry.getPose());
@@ -123,7 +126,7 @@ public class CenterSpecimen extends LinearOpMode {
         dashTelemetry.update();
 
 
-        setBot_Setpoint(0, 0, 0);
+        setBot_Setpoint(0, 0, 0); //Se inician los setpoints en cero lo cual hace que la variable de autonomo suba uno por lo que esa variable se decidio iniciar en -1
 
         waitForStart();
 
@@ -133,7 +136,7 @@ public class CenterSpecimen extends LinearOpMode {
             odometry.updatePose();
 
             xPos = odometry.getPose().getY();
-            yPos = odometry.getPose().getX();
+            yPos = odometry.getPose().getX(); //Se le adjuntan los valores de posicion a las variables
             zAngle = getAngle(odometry.getPose().getRotation().getDegrees());
 
             //dashTelemetry
@@ -168,9 +171,9 @@ public class CenterSpecimen extends LinearOpMode {
             dashTelemetry.update();
 
 
-            switch(autonomous){
+            switch(autonomous){ //Aqui inicia el autonomo
                 case 0:
-                    setBot_Setpoint(-23, 22.5, 0);
+                    setBot_Setpoint(-23, 22.5, 0);//Solo se pone las coordenadas deseadas y el valor de autonomo sube 1 cada que llegue al setpoint
                     break;
                 case 1:
                     setBot_Setpoint(6, 19, 0);
@@ -240,6 +243,8 @@ public class CenterSpecimen extends LinearOpMode {
                     break;
             }
 
+
+            //Para cada angulo se ddeben de cabiar los ejes tanto negativos o positivos como X y Y
             if (PidZ.getSetPoint() > 120 && PidZ.getSetPoint() < -240) {
                 m_Drive.driveRobotCentric(
                         -PidX.calculate(odometry.getPose().getY())*0.5,
