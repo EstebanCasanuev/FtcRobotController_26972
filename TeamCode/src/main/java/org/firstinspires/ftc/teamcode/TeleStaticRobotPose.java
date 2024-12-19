@@ -66,7 +66,10 @@ public class TeleStaticRobotPose extends LinearOpMode {
     @Override
     public void runOpMode() throws InterruptedException {
 
+
+
         int autonomous = 0;
+
 
         frontLeftMotor = new MotorEx(hardwareMap, "frontLeftMotor");
         frontRightMotor = new MotorEx(hardwareMap, "frontRightMotor");
@@ -79,6 +82,7 @@ public class TeleStaticRobotPose extends LinearOpMode {
         PidY = new PIDController(PidY_P, PidY_I, PidY_D);
         PidZ = new PIDController(PidZ_P, PidZ_I, PidZ_D);
 
+
         frontLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         frontRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         rearRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
@@ -86,6 +90,8 @@ public class TeleStaticRobotPose extends LinearOpMode {
         frontRightMotor.resetEncoder();
         frontLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
+
+
 
         odometry = new HolonomicOdometry(
                 frontLeftMotor::getDistance,
@@ -96,6 +102,7 @@ public class TeleStaticRobotPose extends LinearOpMode {
         );
 
         odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
+
 
         dashTelemetry.addData("Robot Position at Init: ", odometry.getPose());
 
