@@ -56,8 +56,8 @@ public class TeleStaticRobotPose extends LinearOpMode {
 
 
 
-    public static final double TRACKWIDTH = 18;
-    public static final double CENTER_WHEEL_OFFSET = 4;
+    public static final double TRACKWIDTH = 11.25;
+    public static final double CENTER_WHEEL_OFFSET = 0;
     public static final double WHEEL_DIAMETER = 1.25;
     // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 2000;
@@ -82,21 +82,21 @@ public class TeleStaticRobotPose extends LinearOpMode {
         PidY = new PIDController(PidY_P, PidY_I, PidY_D);
         PidZ = new PIDController(PidZ_P, PidZ_I, PidZ_D);
 
+        rearRightMotor.setInverted(true);
+        frontLeftMotor.setInverted(true);
 
-        frontLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
+        rearLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         frontRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         rearRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
 
         frontRightMotor.resetEncoder();
-        frontLeftMotor.resetEncoder();
+        rearLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
 
-
-
         odometry = new HolonomicOdometry(
-                frontLeftMotor::getDistance,
-                frontRightMotor::getDistance,
-                rearRightMotor::getDistance,
+                ()->-rearLeftMotor.getDistance(),
+                ()->-frontRightMotor.getDistance(),
+                ()->rearRightMotor.getDistance(),
                 TRACKWIDTH,
                 CENTER_WHEEL_OFFSET
         );
@@ -166,20 +166,17 @@ public class TeleStaticRobotPose extends LinearOpMode {
 
             }else if(PidZ.getSetPoint() == 90){
                 m_Drive.driveRobotCentric(
-                        PidY.calculate(odometry.getPose().getX())*0.5,
-                        -PidX.calculate(odometry.getPose().getY())*0.5,
-                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
+                        -PidY.calculate(odometry.getPose().getX())*0.5,
+                        PidX.calculate(odometry.getPose().getY())*0.5,
+                        PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
 
-            }
-
-
-            else {
+            } else {
 
                 m_Drive.driveRobotCentric(
-                        -PidX.calculate(odometry.getPose().getY()) * 0.5,
-                        -PidY.calculate(odometry.getPose().getX()) * 0.5,
-                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
+                        PidX.calculate(odometry.getPose().getY()) * 0.5,
+                        PidY.calculate(odometry.getPose().getX()) * 0.5,
+                        PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
                 );
             }
         }

@@ -14,8 +14,8 @@ public class OdometryRead extends LinearOpMode {
     private MotorEx leftEncoder, rightEncoder, perpEncoder;
     private HolonomicOdometry odometry;
 
-    public static final double TRACKWIDTH = 14.5;
-    public static final double CENTER_WHEEL_OFFSET = 7;
+    public static final double TRACKWIDTH = 11.25;
+    public static final double CENTER_WHEEL_OFFSET = 0;
     public static final double WHEEL_DIAMETER = 1.25;
     // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 2000;
@@ -35,11 +35,10 @@ public class OdometryRead extends LinearOpMode {
         rightEncoder.resetEncoder();
         perpEncoder.resetEncoder();
 
-
         odometry = new HolonomicOdometry(
-                leftEncoder::getDistance,
-                rightEncoder::getDistance,
-                perpEncoder::getDistance,
+                ()->-leftEncoder.getDistance(),
+                ()->-rightEncoder.getDistance(),
+                ()->-perpEncoder.getDistance(),
                 TRACKWIDTH,
                 CENTER_WHEEL_OFFSET
         );

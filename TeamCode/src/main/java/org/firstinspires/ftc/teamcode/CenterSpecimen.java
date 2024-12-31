@@ -43,8 +43,8 @@ public class CenterSpecimen extends LinearOpMode {
     public static double D_SWINGMOTION= 0.00;
 
     //private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
-    private MotorEx rightSlider, leftSlider;
-    private MotorEx SlideMotion;
+    /*private MotorEx rightSlider, leftSlider;
+    private MotorEx SlideMotion;*/
 
 
     //dashTelemetryPacket packet = new dashTelemetryPacket();
@@ -60,8 +60,8 @@ public class CenterSpecimen extends LinearOpMode {
 
 
 
-    public static final double TRACKWIDTH = 18;
-    public static final double CENTER_WHEEL_OFFSET = 4;
+    public static final double TRACKWIDTH = 11.25;
+    public static final double CENTER_WHEEL_OFFSET = 0;
     public static final double WHEEL_DIAMETER = 1.25;
     // if needed, one can add a gearing term here
     public static final double TICKS_PER_REV = 2000;
@@ -90,27 +90,21 @@ public class CenterSpecimen extends LinearOpMode {
         PidZ = new PIDController(PidZ_P, PidZ_I, PidZ_D);
 
 
-        frontLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
+        rearRightMotor.setInverted(true);
+        frontLeftMotor.setInverted(true);
+
+        rearLeftMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         frontRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
         rearRightMotor.setDistancePerPulse(DISTANCE_PER_PULSE);
 
         frontRightMotor.resetEncoder();
-        frontLeftMotor.resetEncoder();
+        rearLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
 
-        rightSlider = new MotorEx(hardwareMap, "rightSlider");
-        leftSlider = new MotorEx(hardwareMap, "leftSlider");
-
-        SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
-
-        leftSlider.setInverted(true);
-
-
-
         odometry = new HolonomicOdometry(
-                frontLeftMotor::getDistance,
-                frontRightMotor::getDistance,
-                rearRightMotor::getDistance,
+                ()->-rearLeftMotor.getDistance(),
+                ()->-frontRightMotor.getDistance(),
+                ()->rearRightMotor.getDistance(),
                 TRACKWIDTH,
                 CENTER_WHEEL_OFFSET
         );
@@ -240,26 +234,19 @@ public class CenterSpecimen extends LinearOpMode {
                     break;
             }
 
-            if (PidZ.getSetPoint() > 120 && PidZ.getSetPoint() < -240) {
+            if(PidZ.getSetPoint() == 90){
                 m_Drive.driveRobotCentric(
-                        -PidX.calculate(odometry.getPose().getY())*0.5,
-                        PidY.calculate(odometry.getPose().getX())*0.5,
-                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
+                        -PidY.calculate(odometry.getPose().getX())*0.5,
+                        PidX.calculate(odometry.getPose().getY())*0.5,
+                        PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
                 );
 
-            }else if(PidZ.getSetPoint() == 90){
-                m_Drive.driveRobotCentric(
-                        PidY.calculate(odometry.getPose().getX())*0.5,
-                        -PidX.calculate(odometry.getPose().getY())*0.5,
-                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees()))*0.35
-                );
-
-            }else{
+            } else {
 
                 m_Drive.driveRobotCentric(
-                        -PidX.calculate(odometry.getPose().getY()) * 0.5,
-                        -PidY.calculate(odometry.getPose().getX()) * 0.5,
-                        -PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
+                        PidX.calculate(odometry.getPose().getY()) * 0.5,
+                        PidY.calculate(odometry.getPose().getX()) * 0.5,
+                        PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
                 );
             }
         }
