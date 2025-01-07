@@ -26,9 +26,9 @@ public class Main extends LinearOpMode {
     public static double I_SLIDEMOTION= 0.001;
     public static double D_SLIDEMOTION= 0.01;
 
-    public static double P_SWINGMOTION= 0.1;
+    public static double P_SWINGMOTION= 0.003;
     public static double I_SWINGMOTION= 0.00;
-    public static double D_SWINGMOTION= 0.00;
+    public static double D_SWINGMOTION= 0.000001;
 
     public static double P_WRIST= 0.1;
     public static double I_WRIST= 0.00;
@@ -44,7 +44,7 @@ public class Main extends LinearOpMode {
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
     private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
-    private MotorEx rightSlider, leftSlider, Wrist, SlideMotion;
+    private MotorEx rightSlider, Wrist, SlideMotion;
 
 
     RevColorSensorV3 colorSensor;
@@ -57,7 +57,7 @@ public class Main extends LinearOpMode {
         float value;
 
     PIDController SlidePID = new PIDController(P_SLIDEMOTION, I_SLIDEMOTION, D_SLIDEMOTION);
-    //PIDController SwingSlidePID = new PIDController(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
+    PIDController SwingSlidePID = new PIDController(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
     PIDController WristPID = new PIDController(P_WRIST, I_WRIST, D_WRIST);
 
     MecanumDrive m_Drive;
@@ -95,17 +95,15 @@ public class Main extends LinearOpMode {
                 CENTER_WHEEL_OFFSET
         );*/
 
-        //rightSlider = new MotorEx(hardwareMap, "Slider");
+        rightSlider = new MotorEx(hardwareMap, "Swing");
 
         Wrist = new MotorEx(hardwareMap, "Wrist");
 
-        //SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
+        SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
 
-        //rightSlider.resetEncoder();
+        rightSlider.resetEncoder();
         Wrist.resetEncoder();
         //SlideMotion.resetEncoder();
-
-        //leftSlider.setInverted(true);
 
         //odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
 
@@ -126,24 +124,42 @@ public class Main extends LinearOpMode {
                         gamepad1.right_stick_x
                 );*/
 
-                //rightSlider.set(SwingSlidePID.calculate(leftSlider.getCurrentPosition()));
-                //leftSlider.set(SwingSlidePID.calculate(leftSlider.getCurrentPosition()));
+                rightSlider.set(-SwingSlidePID.calculate(rightSlider.getCurrentPosition()) * 0.7);
+                telemetry.addData("Swing Encoder: ", rightSlider.getCurrentPosition());
+                telemetry.addData("Swing Power: ", SwingSlidePID.calculate(rightSlider.getCurrentPosition()));
+                telemetry.addData("Swing Setpoint: ", SwingSlidePID.getSetPoint());
+
                 Wrist.set(WristPID.calculate(Wrist.getCurrentPosition()));
                 telemetry.addData("Wrist Encoder: ", Wrist.getCurrentPosition());
                 telemetry.addData("Wrist Power: ", WristPID.calculate(Wrist.getCurrentPosition()));
                 telemetry.addData("Wrist Setpoint: ", WristPID.getSetPoint());
 
+                if(SwingSlidePID.getSetPoint() < 500 && rightSlider.getCurrentPosition() > 500){
+                    SwingSlidePID.setPID(0.0001, I_SWINGMOTION, D_SWINGMOTION);
+                }else{
+                    SwingSlidePID.setPID(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
 
-                /*if (gamepad2.dpad_down) {
+                }
+
+
+                if (gamepad2.dpad_down) {
                     SlideMotion.set(gamepad2.right_trigger - gamepad2.left_trigger);
                 } else {
                     SlideMotion.set(SlidePID.calculate(SlideMotion.getCurrentPosition()));
-                }*/
+                }
 
                 if (gamepad2.left_bumper) {
                     WristPID.setSetPoint(-100);
                 } else {
                     WristPID.setSetPoint(-10);
+                }
+
+                if (gamepad2.dpad_left){
+                    SwingSlidePID.setSetPoint(1500);
+                }else if(gamepad2.dpad_up){
+                    SwingSlidePID.setSetPoint(1910);
+                }else if(gamepad2.dpad_right){
+                    SwingSlidePID.setSetPoint(100);
                 }
 
 
