@@ -8,6 +8,8 @@ import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.hardware.SensorColor;
+import com.arcrobotics.ftclib.hardware.ServoEx;
+import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -15,8 +17,10 @@ import com.qualcomm.robotcore.eventloop.opmode.*;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedColorSensor;
 import com.qualcomm.robotcore.hardware.NormalizedRGBA;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
+import org.firstinspires.ftc.teamcode.Subsystems.SensorColorSubsystem;
 
 @Config
 @TeleOp(name = "Main")
@@ -30,7 +34,9 @@ public class Main extends LinearOpMode {
     public static double I_SWINGMOTION= 0.00;
     public static double D_SWINGMOTION= 0.00;
 
-    private HolonomicOdometry odometry;
+    //private HolonomicOdometry odometry;
+
+    OdometryRead odometry;
 
     public static final double TRACKWIDTH = 11.25;
     public static final double CENTER_WHEEL_OFFSET = 0;
@@ -43,18 +49,9 @@ public class Main extends LinearOpMode {
     private MotorEx rightSlider, leftSlider;
     //private MotorEx SlideMotion;
 
+    SensorColorSubsystem Sensor_Color = new SensorColorSubsystem();
 
-
-    //ColorSensor colorSensor;
-    //SensorColor colorSensor;
-    RevColorSensorV3 colorSensor;
-        NormalizedRGBA myNormalizedColors;
-        int myColor;
-
-        String ActualColor;
-        float hue;
-        float saturation;
-        float value;
+    CRServo Intake;
 
     //PIDController SlidePID = new PIDController(P_SLIDEMOTION, I_SLIDEMOTION, D_SLIDEMOTION);
     //PIDController SwingSlidePID = new PIDController(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
@@ -66,8 +63,11 @@ public class Main extends LinearOpMode {
 
         //SlidePID.setTolerance(100);
 
-        //colorSensor = new SensorColor(hardwareMap, "colorSensor");
-        colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
+
+
+        Intake = hardwareMap.get(CRServo.class, "Intake");
+
+
         frontLeftMotor = new MotorEx(hardwareMap, "frontLeftMotor");
         frontRightMotor = new MotorEx(hardwareMap, "frontRightMotor");
         rearRightMotor = new MotorEx(hardwareMap, "rearRightMotor");
@@ -95,6 +95,8 @@ public class Main extends LinearOpMode {
                 CENTER_WHEEL_OFFSET
         );*/
 
+        odometry = new OdometryRead();
+
         //rightSlider = new MotorEx(hardwareMap, "rightSlider");
         //leftSlider = new MotorEx(hardwareMap, "leftSwing");
 
@@ -110,7 +112,6 @@ public class Main extends LinearOpMode {
 
         //telemetry.addData("Robot Position at Init: ", odometry.getPose());
 
-        telemetry.addData("Color Sensor Enabled: ", colorSensor.initialize());
         telemetry.update();
 
         waitForStart();
@@ -125,25 +126,15 @@ public class Main extends LinearOpMode {
                         gamepad1.right_stick_x
                 );
 
+
+                Intake.set(1);
+
                 //SlideMotion.set(SlidePID.calculate(SlideMotion.getCurrentPosition()) *0.2);
                 //rightSlider.set(SwingSlidePID.calculate(leftSlider.getCurrentPosition()));
                 //leftSlider.set(SwingSlidePID.calculate(leftSlider.getCurrentPosition()));
                 //telemetry.addData("Encoder: ", SlideMotion.getCurrentPosition());
 
-                myNormalizedColors = ((NormalizedColorSensor) colorSensor).getNormalizedColors();
-                myColor = myNormalizedColors.toColor();
-                hue = JavaUtil.rgbToHue(Color.red(myColor), Color.green(myColor), Color.blue(myColor));
-                saturation = JavaUtil.rgbToSaturation(Color.red(myColor), Color.green(myColor), Color.blue(myColor));
-                value = JavaUtil.rgbToValue(Color.red(myColor), Color.green(myColor), Color.blue(myColor));
-
-                if(red() > blue() && red() > green()){
-                    ActualColor = "red";
-                } else if (green() > blue() && green() > red()) {
-                    ActualColor = "green";
-                }else if (blue() > green() && blue() > red()) {
-                    ActualColor = "blue";
-                }
-                    telemetry.addData("Color: ", ActualColor);
+                telemetry.addData("Color: ", Sensor_Color.Color());
 
                 telemetry.update();
 
@@ -158,20 +149,12 @@ public class Main extends LinearOpMode {
                     SlidePID.setSetPoint(-1000);
                 }*/
 
-                /*telemetry.addData("X:", odometry.getPose().getX());
-                telemetry.addData("Y:", odometry.getPose().getY());
-                telemetry.addData("Angulo:", odometry.getPose().getRotation());*/
+                telemetry.addData("X:", odometry.xPos);
+                telemetry.addData("Y:", odometry.yPos);
+                telemetry.addData("Angulo:", odometry.zAngle);
             }
         }
     }
 
-    public float red(){
-        return Float.parseFloat(JavaUtil.formatNumber(myNormalizedColors.red, 3));
-    }
-    public float green(){
-        return Float.parseFloat(JavaUtil.formatNumber(myNormalizedColors.green, 3));
-    }
-    public float blue(){
-        return Float.parseFloat(JavaUtil.formatNumber(myNormalizedColors.blue, 3));
-    }
+
 }

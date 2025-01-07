@@ -21,6 +21,10 @@ public class OdometryRead extends LinearOpMode {
     public static final double TICKS_PER_REV = 2000;
     public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
+    double xPos;
+    double yPos;
+    double zAngle;
+
     @Override
     public void runOpMode() throws InterruptedException {
         leftEncoder = new MotorEx(hardwareMap, "frontLeftMotor");
@@ -56,6 +60,11 @@ public class OdometryRead extends LinearOpMode {
 
             // update position
             odometry.updatePose();
+
+            xPos = odometry.getPose().getY();
+            yPos = odometry.getPose().getX();
+            zAngle = getAngle(odometry.getPose().getRotation().getDegrees());
+
             telemetry.addData("X:", odometry.getPose().getX());
             telemetry.addData("Y:", odometry.getPose().getY());
             telemetry.addData("Angulo:", odometry.getPose().getRotation());
