@@ -13,8 +13,8 @@ public class Constants {
     }
 
     public class SlideSetpoints {
-        public static final int ALL_THE_WAY = -4000;
-        public static final int ALL_IN = -80;
+        public static final int ALL_THE_WAY = -7000;
+        public static final int ALL_IN = -50;
         public static final int IN_THE_MIDDLE = -2300;
     }
 
