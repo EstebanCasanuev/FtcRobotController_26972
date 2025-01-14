@@ -1,5 +1,25 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidX_P;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidX_I;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidX_D;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidY_P;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidY_I;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidY_D;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidZ_P;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidZ_I;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidZ_D;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.CENTER_WHEEL_OFFSET;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.TICKS_PER_REV;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.TRACKWIDTH;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.D_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.I_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.P_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.D_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.I_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.P_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.OdometryRead.DISTANCE_PER_PULSE;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 
@@ -35,18 +55,6 @@ public class TeleStaticRobotPose extends LinearOpMode {
     PIDController PidY;
     PIDController PidZ;
 
-    public static double PidX_P = 0.1;
-    public static double PidX_I = 0;
-    public static double PidX_D = 0;
-
-    public static double PidY_P = 0.1;
-    public static double PidY_I = 0;
-    public static double PidY_D = 0;
-
-    public static double PidZ_P = 0.1;
-    public static double PidZ_I = 0;
-    public static double PidZ_D = 0;
-
     public static double X_Setpoint = 0;
     public static double Y_Setpoint = 0;
     public static double Z_Setpoint = 0;
@@ -54,14 +62,6 @@ public class TeleStaticRobotPose extends LinearOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashTelemetry = dashboard.getTelemetry();
 
-
-
-    public static final double TRACKWIDTH = 11.25;
-    public static final double CENTER_WHEEL_OFFSET = 0;
-    public static final double WHEEL_DIAMETER = 1.25;
-    // if needed, one can add a gearing term here
-    public static final double TICKS_PER_REV = 2000;
-    public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
 
     @Override
     public void runOpMode() throws InterruptedException {

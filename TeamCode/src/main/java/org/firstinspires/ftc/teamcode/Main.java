@@ -1,5 +1,23 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.CENTER_WHEEL_OFFSET;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.TICKS_PER_REV;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.TRACKWIDTH;
+import static org.firstinspires.ftc.teamcode.Constants.SlideSetpoints.ALL_IN;
+import static org.firstinspires.ftc.teamcode.Constants.SlideSetpoints.ALL_THE_WAY;
+import static org.firstinspires.ftc.teamcode.Constants.SlideSetpoints.IN_THE_MIDDLE;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.D_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.I_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.P_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.SwingSetpoints.DOWN;
+import static org.firstinspires.ftc.teamcode.Constants.SwingSetpoints.MIDDLE;
+import static org.firstinspires.ftc.teamcode.Constants.SwingSetpoints.UP;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.DOWN_P_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.D_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.I_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.P_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.OdometryRead.DISTANCE_PER_PULSE;
+
 import android.graphics.Color;
 
 import com.acmerobotics.dashboard.config.Config;
@@ -8,6 +26,7 @@ import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
 import com.arcrobotics.ftclib.hardware.SensorColor;
+import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.qualcomm.hardware.rev.RevColorSensorV3;
@@ -21,30 +40,13 @@ import org.firstinspires.ftc.robotcore.external.JavaUtil;
 @Config
 @TeleOp(name = "Main")
 public class Main extends LinearOpMode {
-
-    public static double P_SLIDEMOTION= 1.5;
-    public static double I_SLIDEMOTION= 0.001;
-    public static double D_SLIDEMOTION= 0.01;
-
-    public static double P_SWINGMOTION= 0.003;
-    public static double I_SWINGMOTION= 0.00;
-    public static double D_SWINGMOTION= 0.000001;
-
-    public static double P_WRIST= 0.1;
-    public static double I_WRIST= 0.00;
-    public static double D_WRIST = 0.00;
-
+    
     private HolonomicOdometry odometry;
 
-    public static final double TRACKWIDTH = 11.25;
-    public static final double CENTER_WHEEL_OFFSET = 0;
-    public static final double WHEEL_DIAMETER = 1.25;
-    // if needed, one can add a gearing term here
-    public static final double TICKS_PER_REV = 2000;
-    public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
-
     private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
-    private MotorEx rightSlider, Wrist, SlideMotion;
+    private MotorEx rightSlider, SlideMotion;
+
+    private CRServo Intake;
 
 
     RevColorSensorV3 colorSensor;
@@ -58,17 +60,14 @@ public class Main extends LinearOpMode {
 
     PIDController SlidePID = new PIDController(P_SLIDEMOTION, I_SLIDEMOTION, D_SLIDEMOTION);
     PIDController SwingSlidePID = new PIDController(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
-    PIDController WristPID = new PIDController(P_WRIST, I_WRIST, D_WRIST);
 
     MecanumDrive m_Drive;
     @Override
     public void runOpMode() {
 
-        SlidePID.setTolerance(100);
-
         //colorSensor = hardwareMap.get(RevColorSensorV3.class, "colorSensor");
 
-        /*frontLeftMotor = new MotorEx(hardwareMap, "frontLeftMotor");
+        frontLeftMotor = new MotorEx(hardwareMap, "frontLeftMotor");
         frontRightMotor = new MotorEx(hardwareMap, "frontRightMotor");
         rearRightMotor = new MotorEx(hardwareMap, "rearRightMotor");
         rearLeftMotor = new MotorEx(hardwareMap, "rearLeftMotor");
@@ -87,23 +86,22 @@ public class Main extends LinearOpMode {
 
 
 
-        /*odometry = new HolonomicOdometry(
+        odometry = new HolonomicOdometry(
                 ()->-rearLeftMotor.getDistance(),
                 ()->-frontRightMotor.getDistance(),
                 ()->-rearRightMotor.getDistance(),
                 TRACKWIDTH,
-                CENTER_WHEEL_OFFSET
-        );*/
+                Math.PI * CENTER_WHEEL_OFFSET/ TICKS_PER_REV
+        );
 
         rightSlider = new MotorEx(hardwareMap, "Swing");
 
-        Wrist = new MotorEx(hardwareMap, "Wrist");
+        Intake = new CRServo(hardwareMap, "IntakeServo");
 
         SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
 
         rightSlider.resetEncoder();
-        Wrist.resetEncoder();
-        //SlideMotion.resetEncoder();
+        SlideMotion.resetEncoder();
 
         //odometry.updatePose(new Pose2d(0, 0, Rotation2d.fromDegrees(0)));
 
@@ -118,24 +116,21 @@ public class Main extends LinearOpMode {
             while (opModeIsActive()) {
                 //odometry.updatePose();
 
-                /*m_Drive.driveRobotCentric(
+                m_Drive.driveRobotCentric(
                         gamepad1.left_stick_x,
                         -gamepad1.left_stick_y,
                         gamepad1.right_stick_x
-                );*/
+                );
 
                 rightSlider.set(-SwingSlidePID.calculate(rightSlider.getCurrentPosition()) * 0.7);
                 telemetry.addData("Swing Encoder: ", rightSlider.getCurrentPosition());
                 telemetry.addData("Swing Power: ", SwingSlidePID.calculate(rightSlider.getCurrentPosition()));
                 telemetry.addData("Swing Setpoint: ", SwingSlidePID.getSetPoint());
 
-                Wrist.set(WristPID.calculate(Wrist.getCurrentPosition()));
-                telemetry.addData("Wrist Encoder: ", Wrist.getCurrentPosition());
-                telemetry.addData("Wrist Power: ", WristPID.calculate(Wrist.getCurrentPosition()));
-                telemetry.addData("Wrist Setpoint: ", WristPID.getSetPoint());
+
 
                 if(SwingSlidePID.getSetPoint() < 500 && rightSlider.getCurrentPosition() > 500){
-                    SwingSlidePID.setPID(0.0001, I_SWINGMOTION, D_SWINGMOTION);
+                    SwingSlidePID.setPID(DOWN_P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
                 }else{
                     SwingSlidePID.setPID(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
 
@@ -148,22 +143,37 @@ public class Main extends LinearOpMode {
                     SlideMotion.set(SlidePID.calculate(SlideMotion.getCurrentPosition()));
                 }
 
-                if (gamepad2.left_bumper) {
-                    WristPID.setSetPoint(-100);
-                } else {
-                    WristPID.setSetPoint(-10);
-                }
+
 
                 if (gamepad2.dpad_left){
-                    SwingSlidePID.setSetPoint(1500);
+                    SwingSlidePID.setSetPoint(MIDDLE);
                 }else if(gamepad2.dpad_up){
-                    SwingSlidePID.setSetPoint(1910);
+                    SwingSlidePID.setSetPoint(UP);
                 }else if(gamepad2.dpad_right){
-                    SwingSlidePID.setSetPoint(100);
+                    SwingSlidePID.setSetPoint(DOWN);
+                }else if (gamepad2.a) {
+                    SlidePID.setSetPoint(IN_THE_MIDDLE);
+                    //SwingSlidePID.setSetPoint(0);
+                } else if (gamepad2.b) {
+                    SlidePID.setSetPoint(ALL_IN);
+                    //SwingSlidePID.setSetPoint(500);
+                } else if (gamepad2.x) {
+                    //SwingSlidePID.setSetPoint(8000);
+                    SlidePID.setSetPoint(ALL_THE_WAY);
                 }
 
+                if (gamepad2.left_stick_button){
+                    SwingSlidePID.setSetPoint(map(gamepad2.left_stick_y, -1, 1, 200, 1500));
+                }
 
-                //telemetry.addData("Encoder: ", SlideMotion.getCurrentPosition());
+                int Intake_Power = (gamepad2.right_bumper  ? 1 : 0) - (gamepad2.left_bumper  ? 1 : 0);
+
+                Intake.set(Intake_Power);
+
+
+                telemetry.addData("Slide Encoder: ", SlideMotion.getCurrentPosition());
+                telemetry.addData("Slide Setpoint: ", SlidePID.getSetPoint());
+
 
                 /*myNormalizedColors = ((NormalizedColorSensor) colorSensor).getNormalizedColors();
                 myColor = myNormalizedColors.toColor();
@@ -178,19 +188,9 @@ public class Main extends LinearOpMode {
                 } else if (blue() > green() && blue() > red()) {
                     ActualColor = "blue";
                 }
-                telemetry.addData("Color: ", ActualColor);
+                telemetry.addData("Color: ", ActualColor);*/
 
 
-                /*if (gamepad2.a) {
-                    SlidePID.setSetPoint(-8500);
-                    //SwingSlidePID.setSetPoint(0);
-                } else if (gamepad2.b) {
-                    SlidePID.setSetPoint(-80);
-                    //SwingSlidePID.setSetPoint(500);
-                } else if (gamepad2.x) {
-                    //SwingSlidePID.setSetPoint(8000);
-                    SlidePID.setSetPoint(-4000);
-                }*/
 
                 /*telemetry.addData("X:", odometry.getPose().getX());
                 telemetry.addData("Y:", odometry.getPose().getY());
@@ -198,6 +198,10 @@ public class Main extends LinearOpMode {
                 telemetry.update();
             }
         }
+    }
+
+    public double map(double x, double in_min, double in_max, double out_min, double out_max) {
+        return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
     }
 
     public float red(){

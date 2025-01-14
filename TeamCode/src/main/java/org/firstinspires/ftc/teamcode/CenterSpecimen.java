@@ -1,10 +1,36 @@
 package org.firstinspires.ftc.teamcode;
 
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidX_P;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidX_I;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidX_D;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidY_P;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidY_I;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidY_D;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidZ_P;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidZ_I;
+import static org.firstinspires.ftc.teamcode.Constants.Drivetrain_PIDContants.PidZ_D;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.CENTER_WHEEL_OFFSET;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.TICKS_PER_REV;
+import static org.firstinspires.ftc.teamcode.Constants.OdometryConstants.TRACKWIDTH;
+import static org.firstinspires.ftc.teamcode.Constants.SlideSetpoints.ALL_IN;
+import static org.firstinspires.ftc.teamcode.Constants.SlideSetpoints.IN_THE_MIDDLE;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.D_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.I_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Slide_PIDConstants.P_SLIDEMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.SwingSetpoints.DOWN;
+import static org.firstinspires.ftc.teamcode.Constants.SwingSetpoints.MIDDLE;
+import static org.firstinspires.ftc.teamcode.Constants.SwingSetpoints.UP;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.D_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.I_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.Constants.Swing_PIDConstants.P_SWINGMOTION;
+import static org.firstinspires.ftc.teamcode.OdometryRead.DISTANCE_PER_PULSE;
+
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.arcrobotics.ftclib.controller.PIDController;
 import com.arcrobotics.ftclib.drivebase.MecanumDrive;
 import com.arcrobotics.ftclib.geometry.Pose2d;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
+import com.arcrobotics.ftclib.hardware.motors.CRServo;
 import com.arcrobotics.ftclib.hardware.motors.MotorEx;
 import com.arcrobotics.ftclib.kinematics.HolonomicOdometry;
 import com.qualcomm.robotcore.eventloop.opmode.*;
@@ -15,6 +41,10 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 public class CenterSpecimen extends LinearOpMode {
 
     private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
+    private MotorEx SwingSlider, SlideMotion;
+
+    private CRServo Intake;
+
     MecanumDrive m_Drive;
     private HolonomicOdometry odometry;
 
@@ -22,25 +52,8 @@ public class CenterSpecimen extends LinearOpMode {
     PIDController PidY;
     PIDController PidZ;
 
-    public static double PidX_P = 0.20;
-    public static double PidX_I = 0;
-    public static double PidX_D = 0;
-
-    public static double PidY_P = 0.25;
-    public static double PidY_I = 0;
-    public static double PidY_D = 0;
-
-    public static double PidZ_P = 0.1;
-    public static double PidZ_I = 0;
-    public static double PidZ_D = 0;
-
-    public static double P_SLIDEMOTION= 0.00;
-    public static double I_SLIDEMOTION= 0.00;
-    public static double D_SLIDEMOTION= 0.00;
-
-    public static double P_SWINGMOTION= 0.00;
-    public static double I_SWINGMOTION= 0.00;
-    public static double D_SWINGMOTION= 0.00;
+    PIDController SlidePID;
+    PIDController SwingSlidePID;
 
     //private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
     /*private MotorEx rightSlider, leftSlider;
@@ -58,15 +71,6 @@ public class CenterSpecimen extends LinearOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashTelemetry = dashboard.getTelemetry();
 
-
-
-    public static final double TRACKWIDTH = 11.25;
-    public static final double CENTER_WHEEL_OFFSET = 0;
-    public static final double WHEEL_DIAMETER = 1.25;
-    // if needed, one can add a gearing term here
-    public static final double TICKS_PER_REV = 2000;
-    public static final double DISTANCE_PER_PULSE = Math.PI * WHEEL_DIAMETER / TICKS_PER_REV;
-
     double xPos;
     double yPos;
     double zAngle;
@@ -83,11 +87,18 @@ public class CenterSpecimen extends LinearOpMode {
         rearRightMotor = new MotorEx(hardwareMap, "rearRightMotor");
         rearLeftMotor = new MotorEx(hardwareMap, "rearLeftMotor");
 
+
         m_Drive = new MecanumDrive(frontLeftMotor, frontRightMotor, rearLeftMotor, rearRightMotor);
 
         PidX = new PIDController(PidX_P, PidX_I, PidX_D);
         PidY = new PIDController(PidY_P, PidY_I, PidY_D);
         PidZ = new PIDController(PidZ_P, PidZ_I, PidZ_D);
+
+        SlideMotion = new MotorEx(hardwareMap, "SlideMotion");
+        SwingSlider = new MotorEx(hardwareMap, "Swing");
+
+        SlidePID = new PIDController(P_SLIDEMOTION, I_SLIDEMOTION, D_SLIDEMOTION);
+        SwingSlidePID = new PIDController(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
 
 
         rearRightMotor.setInverted(true);
@@ -100,6 +111,12 @@ public class CenterSpecimen extends LinearOpMode {
         frontRightMotor.resetEncoder();
         rearLeftMotor.resetEncoder();
         rearRightMotor.resetEncoder();
+
+        SwingSlider.resetEncoder();
+        SlideMotion.resetEncoder();
+
+
+        Intake = new CRServo(hardwareMap, "IntakeServo");
 
         odometry = new HolonomicOdometry(
                 ()->-rearLeftMotor.getDistance(),
@@ -159,7 +176,18 @@ public class CenterSpecimen extends LinearOpMode {
             dashTelemetry.addData("PIDZ I", PidZ.getI());
             dashTelemetry.addData("PIDZ D", PidZ.getD());
 
+
+            telemetry.addData("Swing Encoder: ", SwingSlider.getCurrentPosition());
+            telemetry.addData("Swing Power: ", SwingSlidePID.calculate(SwingSlider.getCurrentPosition()));
+            telemetry.addData("Swing Setpoint: ", SwingSlidePID.getSetPoint());
+            telemetry.addData("Slide Encoder: ", SlideMotion.getCurrentPosition());
+            telemetry.addData("Slide Setpoint: ", SlidePID.getSetPoint());
+
+            telemetry.addData("Stage", autonomous);
+
             dashTelemetry.update();
+
+            telemetry.update();
 
 
             switch(autonomous){
@@ -167,66 +195,78 @@ public class CenterSpecimen extends LinearOpMode {
                     setBot_Setpoint(-23, 22.5, 0);
                     break;
                 case 1:
-                    setBot_Setpoint(6, 19, 0);
+                    setSwing_Setpoint(MIDDLE);
                     break;
                 case 2:
-                    setBot_Setpoint(13, 31, 0);
+                    setSlider_Setpoint(IN_THE_MIDDLE);
                     break;
                 case 3:
-                    setBot_Setpoint(14, 50, 0);
+                    setSlider_Setpoint(ALL_IN);
                     break;
                 case 4:
-                    setBot_Setpoint(23, 46, 0);
+                    setSwing_Setpoint(DOWN);
                     break;
                 case 5:
-                    setBot_Setpoint(23, 8, 0);
+                    setBot_Setpoint(6, 19, 0);
                     break;
                 case 6:
-                    setBot_Setpoint(23, 46.1, 0);
+                    setBot_Setpoint(13, 31, 0);
                     break;
                 case 7:
-                    setBot_Setpoint(31, 46, 0);
+                    setBot_Setpoint(14, 50, 0);
                     break;
                 case 8:
-                    setBot_Setpoint(31, 8, 0);
+                    setBot_Setpoint(23, 46, 0);
                     break;
                 case 9:
-                    setBot_Setpoint(31, 46.1, 0);
+                    setBot_Setpoint(23, 8, 0);
                     break;
                 case 10:
-                    setBot_Setpoint(7, 19, 0);
+                    setBot_Setpoint(23, 46.1, 0);
                     break;
                 case 11:
-                    setBot_Setpoint(7, 19, 90);
+                    setBot_Setpoint(31, 46, 0);
                     break;
                 case 12:
-                    setBot_Setpoint(-5, 2, 90);
+                    setBot_Setpoint(31, 8, 0);
                     break;
                 case 13:
-                    setBot_Setpoint(-7, 4, 90);
+                    setBot_Setpoint(31, 46.1, 0);
                     break;
                 case 14:
-                    setBot_Setpoint(-9, 10, 0);
+                    setBot_Setpoint(7, 19, 0);
                     break;
                 case 15:
-                    setBot_Setpoint(-29, 24, 0);
+                    setBot_Setpoint(7, 19, 90);
                     break;
                 case 16:
-                    setBot_Setpoint(7, 19.1, 0);
+                    setBot_Setpoint(-5, 2, 90);
                     break;
                 case 17:
-                    setBot_Setpoint(7, 19.1, 90);
+                    setBot_Setpoint(-15, 4, 90);
                     break;
                 case 18:
-                    setBot_Setpoint(-5, 2.1, 90);
-                    break;
-                case 19:
-                    setBot_Setpoint(-7, 4, 90);
-                    break;
-                case 20:
                     setBot_Setpoint(-9, 10, 0);
                     break;
+                case 19:
+                    setBot_Setpoint(-29, 24, 0);
+                    break;
+                case 20:
+                    setBot_Setpoint(7, 19.1, 0);
+                    break;
                 case 21:
+                    setBot_Setpoint(7, 19.1, 90);
+                    break;
+                case 22:
+                    setBot_Setpoint(-5, 2.1, 90);
+                    break;
+                case 23:
+                    setBot_Setpoint(-7, 4, 90);
+                    break;
+                case 24:
+                    setBot_Setpoint(-9, 10, 0);
+                    break;
+                case 25:
                     setBot_Setpoint(-34, 24, 0);
                     break;
                 default:
@@ -249,6 +289,18 @@ public class CenterSpecimen extends LinearOpMode {
                         PidZ.calculate(getAngle(odometry.getPose().getRotation().getDegrees())) * 0.35
                 );
             }
+
+            if(SwingSlidePID.getSetPoint() < 500 && SwingSlider.getCurrentPosition() > 500){
+                SwingSlidePID.setPID(0.0001, I_SWINGMOTION, D_SWINGMOTION);
+            }else{
+                SwingSlidePID.setPID(P_SWINGMOTION, I_SWINGMOTION, D_SWINGMOTION);
+
+            }
+
+            SlideMotion.set(SlidePID.calculate(SlideMotion.getCurrentPosition()));
+            SwingSlider.set(-SwingSlidePID.calculate(SwingSlider.getCurrentPosition()) * 0.7);
+
+
         }
     }
 
@@ -259,6 +311,20 @@ public class CenterSpecimen extends LinearOpMode {
         PidZ.setSetPoint(Z);
 
         if(atSetpoint(X, Y, Z)){
+            autonomous += 1;
+        }
+    }
+
+    public void setSwing_Setpoint(double Setpoint){
+        SwingSlidePID.setSetPoint(Setpoint);
+        if(atSetpoint(Setpoint, SwingSlider.getCurrentPosition())){
+            autonomous += 1;
+        }
+    }
+
+    public void setSlider_Setpoint(double Setpoint){
+        SlidePID.setSetPoint(Setpoint);
+        if(atSetpoint(Setpoint, SlideMotion.getCurrentPosition())){
             autonomous += 1;
         }
     }
@@ -281,6 +347,12 @@ public class CenterSpecimen extends LinearOpMode {
                 && zAngle < Z_Setpoint + 5
                 && zAngle > Z_Setpoint - 5;
 
+    }
+
+    public boolean atSetpoint(double Setpoint, double input){
+        return input > Setpoint - 50
+                && input <+
+                Setpoint + 50;
     }
 
     public double getAngle(double ActualAngle) {
