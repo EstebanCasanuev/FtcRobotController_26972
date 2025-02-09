@@ -14,8 +14,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.hardware.CRServo;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 
-@Autonomous(name = "CenterSpecimen")
-public class CenterSpecimen extends LinearOpMode {
+@Autonomous(name = "CenterSpecimen2")
+public class CenterSpecimen2 extends LinearOpMode {
 
     private MotorEx frontRightMotor, rearRightMotor, frontLeftMotor, rearLeftMotor;
     MecanumDrive m_Drive;
@@ -43,13 +43,13 @@ public class CenterSpecimen extends LinearOpMode {
     public static double PidZ_I = 0;
     public static double PidZ_D = 0;
 
-    public static double P_SLIDEMOTION= 0.00;
-    public static double I_SLIDEMOTION= 0.00;
-    public static double D_SLIDEMOTION= 0.00;
+    public static double P_SLIDEMOTION = 0.00;
+    public static double I_SLIDEMOTION = 0.00;
+    public static double D_SLIDEMOTION = 0.00;
 
-    public static double P_SWINGMOTION= 0.00;
-    public static double I_SWINGMOTION= 0.00;
-    public static double D_SWINGMOTION= 0.00;
+    public static double P_SWINGMOTION = 0.00;
+    public static double I_SWINGMOTION = 0.00;
+    public static double D_SWINGMOTION = 0.00;
 
     /*private MotorEx rightSlider, leftSlider;
     private MotorEx SlideMotion;*/
@@ -81,9 +81,9 @@ public class CenterSpecimen extends LinearOpMode {
     double SERVODER = 0.63;
     double SERVOCAN = 0.6;
     int SERVOPINZA = 0;
-    private static final int MOTOR_DE_LAS_POLEAS_POS_UP = -5350;
-    private static final int MOTOR_DE_LAS_POLEAS_POS_MIDDLE = -600;
-    private static final int MOTOR_DE_LAS_POLEAS_POS_ESTACIONADO = -1800;
+    private static final int MOTOR_DE_LAS_POLEAS_POS_UP = -18350;
+    private static final int MOTOR_DE_LAS_POLEAS_POS_MIDDLE = -10350;
+    private static final int MOTOR_DE_LAS_POLEAS_POS_ESTACIONADO = -6000;
 
     int autonomous = -1;
 
@@ -170,7 +170,7 @@ public class CenterSpecimen extends LinearOpMode {
             zAngle = -odometry.getPose().getRotation().getDegrees();
 
             //dashTelemetry
-            dashTelemetry.addData("X:" , xPos);
+            dashTelemetry.addData("X:", xPos);
             dashTelemetry.addData("Y:", yPos);
             dashTelemetry.addData("Angulo:", zAngle);
             dashTelemetry.addData("X Setpoint:", PidX.getSetPoint());
@@ -197,16 +197,16 @@ public class CenterSpecimen extends LinearOpMode {
             dashTelemetry.addData("PIDZ P", PidZ.getP());
             dashTelemetry.addData("PIDZ I", PidZ.getI());
             dashTelemetry.addData("PIDZ D", PidZ.getD());
-            telemetry.addData("X",xPos);
-            telemetry.addData("X",yPos);
-            telemetry.addData("X querer",(odometry.getPose().getX()));
-            telemetry.addData("X querer",(odometry.getPose().getY()));
+            telemetry.addData("X", xPos);
+            telemetry.addData("X", yPos);
+            telemetry.addData("X querer", (odometry.getPose().getX()));
+            telemetry.addData("X querer", (odometry.getPose().getY()));
             telemetry.addData("servo pos", servocanasta.getPosition());
             telemetry.addData("Case", autonomous);
             dashTelemetry.update();
             telemetry.update();
 
-            switch(autonomous){
+            switch (autonomous) {
                 case 0:
                     setBot_Setpoint(0, 6, 0);
                     break;
@@ -217,7 +217,7 @@ public class CenterSpecimen extends LinearOpMode {
                     setBot_Setpoint(-31, 5, -45);
                     break;
                 case 3:
-                    setBot_Setpoint(-33, 5, -45);
+                    setBot_Setpoint(-34, 5, -45);
                     TIEMPO.reset();
                     break;
                 case 4:
@@ -226,7 +226,9 @@ public class CenterSpecimen extends LinearOpMode {
                     break;
                 case 5:
                     SERVOCAN = 0.1;
-                    if((TIEMPO.milliseconds()) > 1200){autonomous += 1;}
+                    if ((TIEMPO.milliseconds()) > 1200) {
+                        autonomous += 1;
+                    }
                     break;
                 case 6:
                     SERVOCAN = 0.9;
@@ -237,29 +239,29 @@ public class CenterSpecimen extends LinearOpMode {
                     setBot_Setpoint(-12, 8, 0);
                     break;
                 case 8:
-                    setBot_Setpoint(-12, 48, 0);
+                    setBot_Setpoint(-12, 55, 0);
                     break;
                 case 9:
-                    setBot_Setpoint(-24, 48, 0 );
+                    setBot_Setpoint(-24, 55, 0);
                     break;
                 case 10:
-                    setBot_Setpoint(-24, 8, 0);
+                    setBot_Setpoint(-28, 8, 0);
                     break;
                 case 11:
-                    setBot_Setpoint(-24, 48, 0);
+                    setBot_Setpoint(-24, 55, 0);
                     break;
                 case 12:
-                    setBot_Setpoint(-34, 48, 0);
+                    setBot_Setpoint(-34, 55, 0);
                     break;
                 case 13:
                     setBot_Setpoint(-34, 8, 0);
-                    //setPoleas_Setpoint(MOTOR_DE_LAS_POLEAS_POS_ESTACIONADO);
+                    setPoleas_Setpoint(MOTOR_DE_LAS_POLEAS_POS_ESTACIONADO);
                     break;
                 case 14:
                     setBot_Setpoint(-34, 51, 0);
                     break;
                 case 15:
-                    setBot_Setpoint(0, 53, 0);
+                    setBot_Setpoint(-2, 54 , 90);
                     break;
                 default:
                     m_Drive.driveRobotCentric(0, 0, 0);
@@ -271,19 +273,19 @@ public class CenterSpecimen extends LinearOpMode {
 
             if (PidZ.getSetPoint() == 180) {
                 m_Drive.driveRobotCentric(
-                        -PidX.calculate(odometry.getPose().getY())*0.6,
-                        -PidY.calculate(odometry.getPose().getX())*0.6,
-                        PidZ.calculate(-odometry.getPose().getRotation().getDegrees())*0.35
+                        -PidX.calculate(odometry.getPose().getY()) * 0.6,
+                        -PidY.calculate(odometry.getPose().getX()) * 0.6,
+                        PidZ.calculate(-odometry.getPose().getRotation().getDegrees()) * 0.35
                 );
 
-            }else if(PidZ.getSetPoint() == 90){
+            } else if (PidZ.getSetPoint() == 90) {
                 m_Drive.driveRobotCentric(
-                        -PidY.calculate(odometry.getPose().getX())*0.6,
-                        PidX.calculate(odometry.getPose().getY())*0.6,
-                        PidZ.calculate(-odometry.getPose().getRotation().getDegrees())*0.35
+                        -PidY.calculate(odometry.getPose().getX()) * 0.6,
+                        PidX.calculate(odometry.getPose().getY()) * 0.6,
+                        PidZ.calculate(-odometry.getPose().getRotation().getDegrees()) * 0.35
                 );
 
-            }else{
+            } else {
 
                 m_Drive.driveRobotCentric(
                         -PidX.calculate(odometry.getPose().getY()) * 0.6,
@@ -294,21 +296,22 @@ public class CenterSpecimen extends LinearOpMode {
         }
     }
 
-    public void setBot_Setpoint(double X, double Y, double Z){
+    public void setBot_Setpoint(double X, double Y, double Z) {
         PidX.setSetPoint(X);
         PidY.setSetPoint(Y);
         PidZ.setSetPoint(Z);
 
-        if(atSetpoint(X, Y, Z)){
+        if (atSetpoint(X, Y, Z)) {
 
             autonomous += 1;
         }
     }
-    public void setPoleas_Setpoint(int motorSetpoint){
+
+    public void setPoleas_Setpoint(int motorSetpoint) {
         motorpoleaspid.setSetPoint(motorSetpoint);
         motorpoleaspid2.setSetPoint(-motorSetpoint);
 
-        if(atSetpoint(motorSetpoint)){
+        if (atSetpoint(motorSetpoint)) {
             autonomous += 1;
         }
     }
@@ -323,7 +326,7 @@ public class CenterSpecimen extends LinearOpMode {
         }
     }*/
 
-    public boolean atSetpoint(double X_Setpoint, double Y_Setpoint, double Z_Setpoint){
+    public boolean atSetpoint(double X_Setpoint, double Y_Setpoint, double Z_Setpoint) {
         return xPos > X_Setpoint - 2
                 && xPos < X_Setpoint + 2
                 && yPos > Y_Setpoint - 2
@@ -333,15 +336,14 @@ public class CenterSpecimen extends LinearOpMode {
 
     }
 
-    public boolean atSetpoint(double Setpoint1){
+    public boolean atSetpoint(double Setpoint1) {
         return poleasmotor.getCurrentPosition() > Setpoint1 - 15
-                && poleasmotor.getCurrentPosition() < Setpoint1  + 15;
+                && poleasmotor.getCurrentPosition() < Setpoint1 + 15;
 
     }
 
     public double getAngle(double ActualAngle) {
-        return (ActualAngle+90) - 360 * Math.floor((ActualAngle+90)/360) - 90;
+        return (ActualAngle + 90) - 360 * Math.floor((ActualAngle + 90) / 360) - 90;
     }
-
 
 }
